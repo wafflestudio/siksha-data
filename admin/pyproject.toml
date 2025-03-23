@@ -1,0 +1,82 @@
+[project]
+name = "siksha-admin"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "GoGiants1", email = "chooi221@snu.ac.kr" }
+]
+dependencies = [
+    "uvicorn[standard]>=0.34.0",
+    "fastapi>=0.115.11",
+    "sqladmin>=0.20.1",
+    "python-multipart>=0.0.20",
+]
+readme = "README.md"
+requires-python = ">= 3.12"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ruff>=0.11.2",
+    "pre-commit>=4.2.0",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/siksha_admin"]
+
+
+[tool.rye.scripts]
+check = "ruff check ."
+format = "ruff format ."
+check-fix = "ruff check --fix ."
+make-data = "python scripts/make_data.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = [".", "src"]
+addopts = "-v"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "N", "UP", "PL", "RUF"]
+ignore = [
+    "D100",  # Missing docstring in public module
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
+    "D105",  # Missing docstring in magic method
+    "D107",  # Missing docstring in __init__
+    "W293",  # Blank line contains whitespace
+]
+per-file-ignores = { "tests/**/*.py" = ["E501"] }
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.hatch.build]
+include = [
+    "src/**/*.py",
+]
