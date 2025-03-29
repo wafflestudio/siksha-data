@@ -2,7 +2,7 @@ import argparse
 from datetime import datetime, timedelta
 
 from crawler.base import BaseCrawler
-from crawler.registry import CrawlerRegistry
+from registry import CrawlerRegistry
 
 
 def parse_args():
@@ -21,7 +21,7 @@ def run_crawlers(days: int):
         try:
             schedules = crawler.crawl(start_date)
             for schedule in schedules:
-                print(f"{schedule.cafeteria.name}: {schedule.menu}")
+                print(schedule)
         except Exception as e:
             print(f"Error running {crawler_class.__name__}: {e!s}")
 
