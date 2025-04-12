@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
+
 from models import BreakfastSchedule, CafeteriaCorner, DinnerSchedule, LunchSchedule, MealType, Menu
 
 from ..registry import CrawlerRegistry
@@ -16,7 +16,7 @@ class SnuvetCrawler(BaseCrawler):
     base_url = "https://vet.snu.ac.kr/금주의-식단/"
     supports_date = False
 
-    def fetch_html(self, date: Optional[datetime] = None) -> str:
+    def fetch_html(self, date: datetime | None = None) -> str:
         """Fetch HTML content from SNU veterinary cafeteria website."""
         try:
             response = requests.get(self.base_url)

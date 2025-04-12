@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
-from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
+
 from models import BreakfastSchedule, CafeteriaCorner, DinnerSchedule, LunchSchedule, MealType, Menu
 
 from ..registry import CrawlerRegistry
@@ -66,7 +66,7 @@ class SnucoCrawler(BaseCrawler):
     SHOULD_NOT_SPLIT_MENU_NAMES = (("예술계식당", "C코너", MealType.LU),)
     DISQUALIFIED_TEXTS = ("다양한 메뉴가 준비되어 있습니다",)
 
-    def fetch_html(self, date: Optional[datetime] = None) -> str:
+    def fetch_html(self, date: datetime | None = None) -> str:
         """Fetch HTML content from SNUCO website."""
         url = self.base_url
         if date:
@@ -85,7 +85,7 @@ class SnucoCrawler(BaseCrawler):
         text: str,
         meal_type: MealType,
         cafeteria_name: str,
-        cafeteria_tel: Optional[str] = None,
+        cafeteria_tel: str | None = None,
     ) -> list[Menu]:
         menus = []
         cafeteria_corners = []

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Optional
 
 from models import BreakfastSchedule, DinnerSchedule, LunchSchedule
 
@@ -21,7 +20,7 @@ class BaseCrawler(ABC):
         pass
 
     @abstractmethod
-    def fetch_html(self, date: Optional[datetime] = None) -> str:
+    def fetch_html(self, date: datetime | None = None) -> str:
         """Fetch HTML content from the source.
 
         Args:
@@ -51,7 +50,7 @@ class BaseCrawler(ABC):
         pass
 
     def crawl(
-        self, date: Optional[datetime] = None
+        self, date: datetime | None = None
     ) -> list[BreakfastSchedule | LunchSchedule | DinnerSchedule]:
         """Crawl and parse data from the source.
 

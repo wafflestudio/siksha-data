@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
-from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
+
 from models import BreakfastSchedule, CafeteriaCorner, DinnerSchedule, LunchSchedule, MealType, Menu
 
 from ..registry import CrawlerRegistry
@@ -25,7 +25,7 @@ class SnudormCrawler(BaseCrawler):
     """
     HOUR_INDICATOR = "※"
 
-    def fetch_html(self, date: Optional[datetime] = None) -> str:
+    def fetch_html(self, date: datetime | None = None) -> str:
         """Fetch HTML content from SNU dormitory website."""
         url = self.base_url
         if date:
@@ -101,7 +101,7 @@ class SnudormCrawler(BaseCrawler):
         return menus
 
     def parse(
-        self, html_content: str, date: Optional[datetime] = None
+        self, html_content: str, date: datetime | None = None
     ) -> list[BreakfastSchedule | LunchSchedule | DinnerSchedule]:
         """
         Parse HTML content for the SNUDORM and return schedule data.
