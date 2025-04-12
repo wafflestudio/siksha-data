@@ -29,12 +29,3 @@ class CrawlerRegistry:
     def get_all_crawlers(cls) -> list[type[BaseCrawler]]:
         """Get all registered crawler classes."""
         return list(cls._crawlers.values())
-
-
-# Import and register all crawlers
-def register_crawlers():
-    pass
-
-
-# Register crawlers when this module is imported
-register_crawlers()
