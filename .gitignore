@@ -169,3 +169,23 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Visual Studio Code
+.vscode/
+
+# Project specific
+data/
+*.csv
+*.json
+!config.json
+logs/
+*.log
+
+# Cursor specific
+.cursor/rules
+
+# Test data
+crawler/tests/back_test_data/
+
+# Editor specific
+.editorconfig
