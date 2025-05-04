@@ -20,18 +20,58 @@ rye run pytest
 ```
 
 ### 테스트 데이터 생성
-```bash
-# 테스트 데이터만 생성 후 테스트 실행하지 않고 종료
-rye run pytest --make-data --exit-after-data
 
-# 특정 일수만큼 데이터 생성
-rye run pytest --make-data --days 14 --exit-after-data
+`--make-raw-html` 혹은 `--make-train-data` 옵션이 주어지는 경우 테스트가 실행되지 않습니다.
+
+```bash
+# raw HTML 파일 생성
+rye run pytest -s --make-raw-html
+
+# 학습 데이터 생성
+rye run pytest -s --make-train-data
+
+# raw HTML 파일과 학습 데이터 모두 생성
+rye run pytest -s --make-raw-html --make-train-data
+
+# 특정 일수만큼 raw HTML 파일 생성
+rye run pytest -s --make-raw-html --days 14
 
 # 특정 소스에 대해서만 데이터 생성
-rye run pytest --make-data --sources snuco snuvet --exit-after-data
+rye run pytest -s --make-raw-html --make-train-data --sources snuco snuvet
 
-# 데이터 생성 후 테스트 실행
-rye run pytest --make-data
+# 최근 3일의 데이터로 Parser 테스트 실행
+rye run pytest -s --days 3 -k "test_parser"
+
+# 최근 3일의 데이터로 Normalizer 테스트 실행
+rye run pytest -s --days 3 -k "test_normalizer"
+
+# 최근 3일의 데이터로 Categorizer 테스트 실행
+rye run pytest -s --days 3 -k "test_categorizer"
+```
+
+## Noramlzier/Categorizer 사전 업데이트 및 모델 훈련 방법
+
+아래 커맨드를 실행시켜 Interactive CLI로 새로운 데이터를 검수하고 `src/resources` 에 반영하도록 합니다.
+커맨드를 실행시키기 전에 학습 데이터를 생성해야 합니다.
+
+```bash
+rye run pytest -s --make-train-data
+rye run update-dict
+```
+
+## 크롤러 결과를 markdown으로 출력하기
+
+복붙하기 쉽게 markdown 형식으로 하루치의 데이터만 출력해줍니다.
+
+```bash
+# 오늘 식단을 출력
+rye run pytest -s --dump
+
+# 하루 전 식단을 출력
+rye run pytest -s --days 1 --dump
+
+# 생협 식당 정보만을 출력
+rye run pytest -s --days 1 --sources snuco --dump
 ```
 
 ## 식당 정보

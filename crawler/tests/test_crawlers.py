@@ -1,4 +1,6 @@
+from src.categorizer import MenuCategorizer
 from src.models import MealType
+from src.normalizer import MenuNormalizer
 
 
 def test_parser(crawler_test_data):
@@ -21,8 +23,26 @@ def test_parser(crawler_test_data):
 
     # 수의대 식당은 아침 메뉴를 제공하지 않음
     if crawler_name != "snuvet":
-        assert (
-            len(breakfast_schedules) > 0
-        ), f"{crawler_name} 크롤러가 아침 메뉴를 파싱하지 않았습니다."
+        assert len(breakfast_schedules) > 0, (
+            f"{crawler_name} 크롤러가 아침 메뉴를 파싱하지 않았습니다."
+        )
     assert len(lunch_schedules) > 0, f"{crawler_name} 크롤러가 점심 메뉴를 파싱하지 않았습니다."
     assert len(dinner_schedules) > 0, f"{crawler_name} 크롤러가 저녁 메뉴를 파싱하지 않았습니다."
+
+
+def test_normalizer(normalizer_test_data):
+    normalizer = MenuNormalizer()
+
+    for menu_name in normalizer_test_data:
+        best, score = normalizer._fuzzy_matching(menu_name)
+
+        print(f"{menu_name} -> {best} ({score})")
+
+
+def test_categorizer(categorizer_test_data):
+    categorizer = MenuCategorizer()
+
+    for menu_name in categorizer_test_data:
+        category = categorizer.categorize(menu_name)
+
+        print(f"{menu_name} -> {category}")

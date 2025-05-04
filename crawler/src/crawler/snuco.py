@@ -6,11 +6,9 @@ from bs4 import BeautifulSoup
 
 from models import BreakfastSchedule, CafeteriaCorner, DinnerSchedule, LunchSchedule, MealType, Menu
 
-from ..registry import CrawlerRegistry
 from .base import BaseCrawler
 
 
-@CrawlerRegistry.register("snuco")
 class SnucoCrawler(BaseCrawler):
     """Crawler for SNUCO cafeteria."""
 
