@@ -1,82 +1,160 @@
-from data.db.models import Menu, Restaurant, Review
+import logging
+
 from sqladmin import ModelView
 from sqlalchemy import Select, select
 from starlette.requests import Request
 
-"""
-어드민 페이지 구성을 위한 템플릿 코드입니다
+from .models import AdminUser, Menu, Restaurant, Review
 
-class UserAdmin(ModelView, model=User):
-    column_list = [    # 보여줄 컬럼
-    
+logger = logging.getLogger(__name__)
+
+
+class BaseAdmin(ModelView):
+    """기본 관리자 뷰 클래스로 인증 및 권한 검사 공통 기능 제공"""
+
+    async def get_current_user(self, request: Request) -> AdminUser | None:
+        """현재 로그인한 관리자 사용자 정보를 가져옵니다."""
+        username = request.session.get("username")
+        if not username:
+            return None
+
+        # 세션의 관리자 권한과 토큰이 있는지 확인
+        user_role = request.session.get("user_role")
+        token = request.session.get("token")
+        if not (user_role and token):
+            return None
+
+        # AdminUser 모델에서 사용자 정보 조회
+        async with self.admin.session_maker() as session:
+            result = await session.execute(select(AdminUser).filter(AdminUser.username == username))
+            user = result.scalar_one_or_none()
+
+        return user
+
+    async def is_accessible(self, request: Request) -> bool:
+        """현재 사용자가 이 뷰에 접근 가능한지 확인합니다."""
+        user = await self.get_current_user(request)
+        if not user:
+            return False
+
+        # 기본적으로 활성 사용자만 접근 가능
+        if not user.is_active:
+            return False
+
+        # 추가 권한 확인은 하위 클래스에서 구현
+        return True
+
+
+class MenuAdmin(BaseAdmin, model=Menu):
+    column_list = [
+        Menu.id,
+        Menu.restaurant,
+        Menu.name_kr,
+        Menu.date,
+        Menu.price,
+        Menu.type,
+        Menu.restaurant_id,
     ]
-
-    form_excluded_columns = [   # 제외할 컬럼
-
-    ]
-
-    column_searchable_list = [     # 검색할 컬럼
-
-    ]
-
-    column_sortable_list = User.__table__.columns.keys()
-"""
-
-
-class MenuAdmin(ModelView, model=Menu):
-    column_list = [Menu.id, Menu.restaurant, Menu.name_kr, Menu.date, Menu.price, Menu.type, Menu.restaurant_id]
 
     column_formatters = {
         Menu.restaurant: lambda m, a: m.restaurant.name_kr,
     }
     column_searchable_list = [Menu.name_kr]
     column_sortable_list = [Menu.date]
-
     column_default_sort = (Menu.date, True)
 
-    form_excluded_columns = [Menu.etc, Menu.created_at, Menu.updated_at, Menu.code, Menu.menu_likes, Menu.reviews]
+    form_excluded_columns = [
+        Menu.etc,
+        Menu.created_at,
+        Menu.updated_at,
+        Menu.code,
+        Menu.menu_likes,
+        Menu.reviews,
+    ]
 
-    def list_query(self, request: Request) -> Select:
-        username = request.session.get("username", "329")
+    async def list_query(self, request: Request) -> Select:
+        user = await self.get_current_user(request)
 
-        if username.isdigit():
-            return select(Menu).filter(Menu.restaurant_id == int(username))
-        else:
-            return select(Menu).filter(Menu.restaurant_id == 329)  # Dummy, for test
+        if not user:
+            # 비인증 상태라면 빈 쿼리 반환
+            logger.warning("Unauthorized access attempt to MenuAdmin")
+            return select(Menu).filter(Menu.id < 0)  # 항상 빈 결과 반환
+
+        if user.role == "restaurant_owner":
+            # 식당 소유자는 자신의 식당 메뉴만 볼 수 있음
+            restaurant_id = request.session.get("restaurant_id")
+            if restaurant_id and restaurant_id.isdigit():
+                return select(Menu).filter(Menu.restaurant_id == int(restaurant_id))
+
+        # 관리자는 모든 메뉴를 볼 수 있음
+        return select(Menu)
 
 
-class RestaurantAdmin(ModelView, model=Restaurant):
-    column_list = [Restaurant.name_kr, Restaurant.addr, Restaurant.etc]
+class RestaurantAdmin(BaseAdmin, model=Restaurant):
+    name = "Restaurant"
+    name_plural = "Restaurants"
 
+    column_list = [Restaurant.id, Restaurant.name_kr, Restaurant.addr, Restaurant.etc]
+    form_excluded_columns = [Restaurant.menus]
     column_searchable_list = [Restaurant.name_kr]
 
-    column_formatters = {
-        Restaurant.etc: lambda m, a: a,
-    }
+    async def is_accessible(self, request: Request) -> bool:
+        # 기본 접근성 검사
+        is_accessible = await super().is_accessible(request)
+        if not is_accessible:
+            return False
 
-    form_excluded_columns = []
+        # 사용자 역할 기반 접근 제어
+        user = await self.get_current_user(request)
+        return user and (user.role in {"superadmin", "restaurant_owner"})
 
-    def list_query(self, request: Request) -> Select:
-        username = request.session.get("username", "329")
+    async def list_query(self, request: Request) -> Select:
+        user = await self.get_current_user(request)
 
-        if username.isdigit():
-            return select(Restaurant).filter(Restaurant.id == int(username))
-        else:
-            return select(Restaurant).filter(Restaurant.id == 329)  # Dummy, for test
+        if not user:
+            return select(Restaurant).filter(Restaurant.id < 0)  # 빈 결과
+
+        if user.role == "restaurant_owner":
+            # 식당 소유자는 자신의 식당만 볼 수 있음
+            restaurant_id = request.session.get("restaurant_id")
+            if restaurant_id and restaurant_id.isdigit():
+                return select(Restaurant).filter(Restaurant.id == int(restaurant_id))
+
+        # 관리자는 모든 식당을 볼 수 있음
+        return select(Restaurant)
 
 
-class ReviewAdmin(ModelView, model=Review):
+class ReviewAdmin(BaseAdmin, model=Review):
     can_edit = False
+    can_export = True
+    name = "Review"
+    name_plural = "Reviews"
+    column_default_sort = (Review.created_at, True)
 
-    column_list = [Review.menu, Review.user, Review.comment, Review.score]
+    column_list = [Review.menu, Review.comment, Review.score]
 
     column_formatters = {
-        Review.user: lambda m, a: m.user.nickname,
         Review.menu: lambda m, a: m.menu.name_kr,
     }
 
-    def list_query(self, request: Request) -> Select:
-        return select(Review).join(Menu, onclause=(Menu.id == Review.menu_id)).filter(Menu.restaurant_id == 329)
+    async def list_query(self, request: Request) -> Select:
+        user = await self.get_current_user(request)
+
+        if not user:
+            return select(Review).filter(Review.id < 0)  # 빈 결과
+
+        if user.role == "restaurant_owner":
+            # 식당 소유자는 자신의 식당에 대한 리뷰만 볼 수 있음
+            restaurant_id = request.session.get("restaurant_id")
+            if restaurant_id and restaurant_id.isdigit():
+                return (
+                    select(Review)
+                    .join(Menu, onclause=(Menu.id == Review.menu_id))
+                    .filter(Menu.restaurant_id == int(restaurant_id))
+                )
+
+        # 관리자는 모든 리뷰를 볼 수 있음
+        return select(Review)
 
 
 admin_views = [MenuAdmin, RestaurantAdmin, ReviewAdmin]
