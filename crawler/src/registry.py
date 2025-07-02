@@ -1,22 +1,19 @@
 from typing import ClassVar
 
 from crawler.base import BaseCrawler
+from crawler.snuco import SnucoCrawler
+from crawler.snudorm import SnudormCrawler
+from crawler.snuvet import SnuvetCrawler
 
 
 class CrawlerRegistry:
     """Registry for crawler classes."""
 
-    _crawlers: ClassVar[dict[str, type[BaseCrawler]]] = {}
-
-    @classmethod
-    def register(cls, source: str):
-        """Register a crawler class for a source."""
-
-        def decorator(crawler_class: type[BaseCrawler]):
-            cls._crawlers[source] = crawler_class
-            return crawler_class
-
-        return decorator
+    _crawlers: ClassVar[dict[str, type[BaseCrawler]]] = {
+        "snuco": SnucoCrawler,
+        "snudorm": SnudormCrawler,
+        "snuvet": SnuvetCrawler,
+    }
 
     @classmethod
     def get_crawler(cls, source: str) -> type[BaseCrawler]:

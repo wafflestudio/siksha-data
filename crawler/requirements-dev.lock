@@ -28,14 +28,20 @@ identify==2.6.9
     # via pre-commit
 idna==3.10
     # via requests
+ijson==3.3.0
 iniconfig==2.1.0
     # via pytest
+joblib==1.5.0
+    # via scikit-learn
+    # via siksha-crawler
 mysql-connector-python==9.2.0
     # via siksha-crawler
 nodeenv==1.9.1
     # via pre-commit
 numpy==2.2.4
     # via pandas
+    # via scikit-learn
+    # via scipy
 packaging==24.2
     # via pytest
 pandas==2.2.3
@@ -50,20 +56,27 @@ pydantic==2.10.6
 pydantic-core==2.27.2
     # via pydantic
 pytest==8.3.5
-    # via siksha-crawler
 python-dateutil==2.9.0.post0
     # via pandas
 pytz==2025.1
     # via pandas
 pyyaml==6.0.2
     # via pre-commit
+rapidfuzz==3.13.0
+    # via siksha-crawler
 requests==2.32.3
     # via siksha-crawler
 ruff==0.11.2
+scikit-learn==1.6.1
+    # via siksha-crawler
+scipy==1.15.2
+    # via scikit-learn
 six==1.17.0
     # via python-dateutil
 soupsieve==2.6
     # via beautifulsoup4
+threadpoolctl==3.6.0
+    # via scikit-learn
 typing-extensions==4.12.2
     # via beautifulsoup4
     # via pydantic
