@@ -89,7 +89,20 @@ class Restaurant(EtcMixin, Base):
     addr: Mapped[str | None] = mapped_column(String(200), nullable=True, comment="주소")
     lat: Mapped[float | None] = mapped_column(Double, nullable=True, comment="위도")
     lng: Mapped[float | None] = mapped_column(Double, nullable=True, comment="경도")
+    owner_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("admin_user.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="식당 주인 관리자 ID",
+    )
+
+    # 관계 설정
+    owner: Mapped["AdminUser"] = relationship("AdminUser", backref="owned_restaurants")
+
     __table_args__ = (UniqueConstraint("code"),)
+
+    def __repr__(self):
+        return f"<Restaurant(code={self.code}, name_kr={self.name_kr}, name_en={self.name_en})>"
 
 
 class Menu(EtcMixin, Base):
@@ -101,7 +114,7 @@ class Menu(EtcMixin, Base):
     )
     restaurant: Mapped["Restaurant"] = relationship("Restaurant", backref="menus")
     code: Mapped[str] = mapped_column(
-        String(200), nullable=False, comment="메뉴 식별자(크롤러에서 사용)"
+        String(200), nullable=False, comment="메뉴 식별자(크롤러에서 사용), white space 제거"
     )
     date: Mapped[str] = mapped_column(
         DATE, index=True, nullable=False, comment="메뉴가 제공되는 날짜"
@@ -116,6 +129,9 @@ class Menu(EtcMixin, Base):
         UniqueConstraint("restaurant_id", "code", "date", "type"),
         Index(None, "code", "restaurant_id"),
     )
+
+    def __repr__(self):
+        return f"<Menu(code={self.code}, name_kr={self.name_kr}, name_en={self.name_en}, date={self.date})>"  # noqa: E501
 
 
 class Review(EtcMixin, Base):
@@ -168,6 +184,9 @@ class Board(Base):
     type: Mapped[int] = mapped_column(
         Integer, server_default="1", nullable=False, comment="게시판 타입(학식,외식)"
     )
+
+    def __repr__(self):
+        return f"<Board(name={self.name}, type={self.type})>"
 
 
 class Post(EtcMixin, Base):
@@ -379,6 +398,12 @@ class RestaurantRequest(Base):
     note: Mapped[str | None] = mapped_column(Text, nullable=True, comment="관리자 메모")
     processed_at: Mapped[str | None] = mapped_column(
         TIMESTAMP(timezone=False), nullable=True, comment="처리 시간"
+    )
+    processed_by: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, comment="처리한 관리자"
+    )
+    restaurant_code: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, comment="생성된 식당 코드"
     )
     __table_args__ = (
         UniqueConstraint("phone", "restaurant_name"),

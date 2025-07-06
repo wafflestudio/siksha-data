@@ -27,5 +27,5 @@ SITE_ENV = os.environ.get("SITE_ENV", "local")
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "admin_secret")  # 토큰 시크릿
 
 
-ADMIN_EXPIRE = os.environ.get("ADMIN_EXPIRE", "300")  # 토큰 만료 시간 (초)
+ADMIN_EXPIRE = int(os.environ.get("ADMIN_EXPIRE", "300"))  # 토큰 만료 시간 (초)
 ALGORITHM = os.environ.get("ALGORITHM", "HS256")

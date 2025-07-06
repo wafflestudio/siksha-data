@@ -1,27 +1,55 @@
 from fastapi import FastAPI
 from sqladmin import Admin
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
 import siksha_admin.config as admin_config
-
-from .auth import AuthenticationBackend
-from .views import admin_views
+from siksha_admin.auth import authentication_backend
+from siksha_admin.db import async_session_maker, engine
+from siksha_admin.views import (
+    AdminUserAdmin,
+    BoardAdmin,
+    CommentAdmin,
+    CommentLikeAdmin,
+    CommentReportAdmin,
+    ImageAdmin,
+    MenuAdmin,
+    MenuLikeAdmin,
+    MenuOwnerAdmin,
+    PostAdmin,
+    PostLikeAdmin,
+    PostReportAdmin,
+    RestaurantAdmin,
+    RestaurantOwnerAdmin,
+    RestaurantRequestAdmin,
+    UserAdmin,
+    VersionAdmin,
+)
 
 app = FastAPI()
 
-# 세션 미들웨어 (로그인 세션 유지용)
-app.add_middleware(SessionMiddleware, secret_key=admin_config.SECRET_KEY)
+app.add_middleware(SessionMiddleware, secret_key=admin_config.ADMIN_SECRET)
 
-# DB 연결
-engine = create_async_engine(admin_config.DATABASE_URL, echo=True)
-async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+admin = Admin(
+    app, engine, session_maker=async_session_maker, authentication_backend=authentication_backend
+)
 
-# SQLAdmin 초기화
-admin = Admin(app, engine, authentication_backend=AuthenticationBackend())
+# Add all views to admin
+admin.add_view(VersionAdmin)
+admin.add_view(UserAdmin)
+admin.add_view(RestaurantAdmin)
+admin.add_view(MenuAdmin)
+admin.add_view(AdminUserAdmin)
+admin.add_view(RestaurantRequestAdmin)
+admin.add_view(BoardAdmin)
+admin.add_view(PostAdmin)
+admin.add_view(CommentAdmin)
+admin.add_view(PostReportAdmin)
+admin.add_view(CommentReportAdmin)
+admin.add_view(MenuLikeAdmin)
+admin.add_view(PostLikeAdmin)
+admin.add_view(CommentLikeAdmin)
+admin.add_view(ImageAdmin)
 
-
-# SQLAdmin 뷰 등록
-for view in admin_views:
-    admin.add_view(view)
+# Owner Views
+admin.add_view(RestaurantOwnerAdmin)
+admin.add_view(MenuOwnerAdmin)
