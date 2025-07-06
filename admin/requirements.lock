@@ -10,6 +10,8 @@
 #   universal: false
 
 -e file:.
+aiomysql==0.2.0
+    # via siksha-admin
 annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
@@ -17,9 +19,15 @@ anyio==4.9.0
     # via watchfiles
 bcrypt==4.3.0
     # via siksha-admin
+cffi==1.17.1
+    # via cryptography
 click==8.1.8
     # via uvicorn
-fastapi==0.115.11
+cryptography==45.0.5
+    # via siksha-admin
+fastapi==0.115.14
+    # via siksha-admin
+greenlet==3.2.3
     # via siksha-admin
 h11==0.14.0
     # via uvicorn
@@ -27,17 +35,23 @@ httptools==0.6.4
     # via uvicorn
 idna==3.10
     # via anyio
+itsdangerous==2.2.0
+    # via siksha-admin
 jinja2==3.1.6
     # via sqladmin
 markupsafe==3.0.2
     # via jinja2
     # via wtforms
+pycparser==2.22
+    # via cffi
 pydantic==2.10.6
     # via fastapi
 pydantic-core==2.27.2
     # via pydantic
 pyjwt==2.10.1
     # via siksha-admin
+pymysql==1.1.1
+    # via aiomysql
 python-dotenv==1.0.1
     # via uvicorn
 python-multipart==0.0.20
